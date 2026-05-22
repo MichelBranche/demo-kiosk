@@ -34,10 +34,20 @@ function App() {
     <KioskProvider>
       <Router>
         <IdleTimeoutGuard>
-          <div className="app-container">
-            <div className="app-routes">
-              <AnimatedRoutes />
+          <div className="app-shell">
+            <div className="app-container">
+              <div className="app-routes">
+                <AnimatedRoutes />
+              </div>
             </div>
+            <a
+              className="app-credit"
+              href="https://www.michelbranche.it"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Design by Michel Branche
+            </a>
           </div>
         </IdleTimeoutGuard>
       </Router>

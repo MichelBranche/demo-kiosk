@@ -61,3 +61,35 @@ export function buildCrossSellLoop(items, sortOptions = {}) {
     loopKey: `${item.id}-${index}`,
   }));
 }
+
+function productToCrossSellItem(product) {
+  return {
+    id: `meal-extra-${product.id}`,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    isBestseller: product.isBestseller,
+    productId: product.id,
+  };
+}
+
+/** Mix alternato Salvaeuro + Sfiziosità per lo step extra del menu. */
+export function buildMealExtraCrossSellItems(catalog, { maxItems = 12 } = {}) {
+  const coupons = shuffleArray(
+    catalog.filter((p) => p.category === 'coupons' && p.image)
+  );
+  const sides = shuffleArray(
+    catalog.filter(
+      (p) => p.category === 'sides' && p.image && !p.tags?.includes('fries')
+    )
+  );
+
+  const mixed = [];
+  const limit = Math.max(coupons.length, sides.length);
+  for (let i = 0; i < limit && mixed.length < maxItems; i += 1) {
+    if (coupons[i] && mixed.length < maxItems) mixed.push(productToCrossSellItem(coupons[i]));
+    if (sides[i] && mixed.length < maxItems) mixed.push(productToCrossSellItem(sides[i]));
+  }
+
+  return mixed;
+}

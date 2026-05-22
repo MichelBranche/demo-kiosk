@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
+import { pageFade } from '../utils/motion';
 import { useKiosk } from '../context/KioskContext';
 import { t } from '../i18n';
 import { promoVideos } from '../data/promos';
@@ -39,9 +40,7 @@ const PromoScreen = () => {
   return (
     <motion.div
       className="promo-screen-root"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      {...pageFade}
       role="button"
       tabIndex={0}
       onClick={handleStartOrder}

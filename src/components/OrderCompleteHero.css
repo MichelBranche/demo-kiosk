@@ -1,0 +1,17 @@
+.order-complete-hero {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 16px;
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.order-complete-hero-img {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}

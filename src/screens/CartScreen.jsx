@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { pageSlide, qtyPop } from '../utils/motion';
 import { ChevronLeft, Plus, Minus, Trash2 } from 'lucide-react';
 import { useKiosk } from '../context/KioskContext';
 import { t } from '../i18n';
 import Price from '../components/Price';
 import { calcLineTotal } from '../utils/price';
+import { formatOrderLineTitle, getOrderLineMeta } from '../utils/orderLine';
 import './CartScreen.css';
 
 const CartScreen = () => {
@@ -32,12 +34,7 @@ const CartScreen = () => {
   };
 
   return (
-    <motion.div
-      className="cart-screen"
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-    >
+    <motion.div className="cart-screen" {...pageSlide}>
       <div className="cart-header">
         <button
           type="button"
@@ -74,10 +71,12 @@ const CartScreen = () => {
                   <img src={item.image} alt={item.name} />
                 </div>
                 <div className="cart-line-body">
-                  <h3>{item.name}</h3>
-                  {item.mealUpgrade && (
-                    <p className="cart-line-meta">+ {item.mealUpgrade.name}</p>
-                  )}
+                  <h3>{formatOrderLineTitle(item)}</h3>
+                  {getOrderLineMeta(item, t, language).map((line, index) => (
+                    <p key={`${item.lineId}-meta-${index}`} className="cart-line-meta">
+                      {line}
+                    </p>
+                  ))}
                   <div className="cart-line-actions">
                     <div className="qty-selector compact">
                       <button
@@ -90,7 +89,13 @@ const CartScreen = () => {
                       >
                         {item.quantity === 1 ? <Trash2 size={16} /> : <Minus size={16} />}
                       </button>
-                      <span className="qty-val">{item.quantity}</span>
+                      <motion.span
+                        key={item.quantity}
+                        className="qty-val"
+                        {...qtyPop}
+                      >
+                        {item.quantity}
+                      </motion.span>
                       <button
                         className="qty-btn"
                         onClick={() =>

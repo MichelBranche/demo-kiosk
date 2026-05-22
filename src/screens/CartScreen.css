@@ -22,8 +22,11 @@
   color: var(--primary-color);
   font: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-height: var(--touch-min);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-fast) var(--ease-tactile),
+    box-shadow var(--duration-normal) var(--ease-tactile);
 }
 
 .cart-back-btn:hover {
@@ -54,10 +57,12 @@
 }
 
 .cart-title {
-  font-size: 32px;
+  font-size: 33px;
   font-weight: 900;
   color: var(--primary-color);
   margin-top: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .order-type-badge {
@@ -129,10 +134,10 @@
 }
 
 .cart-line-body h3 {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--primary-color);
-  line-height: 1.2;
+  line-height: 1.25;
   margin-bottom: 4px;
 }
 
@@ -156,8 +161,15 @@
 }
 
 .qty-selector.compact .qty-btn {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.qty-selector.compact .qty-val {
+  font-size: 17px;
+  min-width: 18px;
 }
 
 .promo-section {
@@ -181,16 +193,24 @@
 .promo-input {
   flex: 1;
   padding: 14px 16px;
+  min-height: var(--touch-min);
   border: 2px solid var(--gray-medium);
   border-radius: var(--border-radius-md);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   background: var(--white);
   color: var(--primary-color);
+  transition: border-color var(--duration-normal) var(--ease-tactile);
+}
+
+.promo-input:focus {
+  outline: none;
+  border-color: var(--gold-active);
 }
 
 .promo-apply {
   padding: 14px 20px;
+  min-height: var(--touch-min);
   white-space: nowrap;
 }
 
@@ -218,6 +238,16 @@
   cursor: pointer;
   color: var(--primary-color);
   opacity: 0.5;
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--duration-normal) var(--ease-tactile);
+}
+
+.promo-clear:hover {
+  opacity: 0.85;
 }
 
 .cart-totals {

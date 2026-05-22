@@ -1,0 +1,360 @@
+.meal-compose-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  background: var(--cream-bg);
+  overflow: hidden;
+}
+
+.meal-compose-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 24px;
+  overflow-y: auto;
+}
+
+.meal-compose-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+.meal-compose-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray-medium);
+  transition: background-color var(--duration-normal) var(--ease-tactile);
+}
+
+.meal-compose-dot.is-active {
+  background: var(--gold-active);
+  transform: scale(1.1);
+}
+
+.meal-compose-step {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-compose-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--primary-color);
+  text-align: center;
+  line-height: 1.15;
+  margin: 0 0 8px;
+}
+
+.meal-compose-sub {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  opacity: 0.7;
+  text-align: center;
+  margin: 0 0 20px;
+  line-height: 1.35;
+}
+
+.meal-compose-size-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.meal-compose-size-card {
+  flex: 1;
+  position: relative;
+  background: var(--white);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-md);
+  padding: 12px 10px 14px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
+}
+
+.meal-compose-size-card.is-selected {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+}
+
+.meal-compose-size-card:active {
+  transform: scale(0.98);
+}
+
+.meal-compose-size-visual {
+  position: relative;
+  height: 88px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.meal-compose-size-main {
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+}
+
+.meal-compose-size-fries {
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  height: 44px;
+  width: auto;
+  z-index: 1;
+}
+
+.meal-compose-size-drink {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 52px;
+  width: auto;
+  z-index: 3;
+}
+
+.meal-compose-size-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1.2;
+}
+
+.meal-compose-size-price {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-top: 4px;
+}
+
+.meal-compose-sub--included {
+  margin-top: -8px;
+  font-weight: 600;
+  color: var(--text-secondary, #666);
+}
+
+.meal-compose-fries-surcharge {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-top: 4px;
+}
+
+.meal-compose-drinks {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  align-content: start;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 2px;
+}
+
+.meal-compose-drink-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: var(--white);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
+}
+
+.meal-compose-drink-card.is-selected {
+  border-color: var(--primary-color);
+}
+
+.meal-compose-drink-card:active {
+  transform: scale(0.98);
+}
+
+.meal-compose-drink-img {
+  height: 56px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.meal-compose-drink-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.meal-compose-extras {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  align-content: start;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 2px;
+}
+
+.meal-compose-extra-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: var(--white);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition:
+    border-color var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
+}
+
+.meal-compose-extra-card.is-selected {
+  border-color: var(--primary-color);
+}
+
+.meal-compose-extra-card:active {
+  transform: scale(0.98);
+}
+
+.meal-compose-extra-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #27ae60;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.meal-compose-extra-img {
+  height: 52px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.meal-compose-extra-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1.25;
+}
+
+.meal-compose-extra-price {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.meal-compose-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.meal-compose-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.meal-compose-actions--row {
+  flex-direction: row;
+  gap: 10px;
+}
+
+.meal-compose-back {
+  flex: 0 0 38%;
+  min-height: var(--touch-min);
+}
+
+.meal-compose-next {
+  flex: 1;
+  min-height: var(--touch-min);
+}
+
+.meal-compose-actions--stack {
+  width: 100%;
+  max-width: 320px;
+  align-self: center;
+}
+
+.meal-compose-link-back {
+  background: none;
+  border: none;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+  opacity: 0.6;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  min-height: var(--touch-min);
+}
+
+.meal-compose-link-back:hover {
+  opacity: 1;
+}
+
+.meal-compose-cancel {
+  background: none;
+  border: none;
+  padding: 6px 12px 2px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: #8a8a8a;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.meal-compose-cancel:active {
+  color: #666;
+}

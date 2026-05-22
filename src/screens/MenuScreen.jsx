@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useHorizontalDragScroll } from '../hooks/useHorizontalDragScroll';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { pageFade, badgePop } from '../utils/motion';
 import {
   menuCategories,
   getCategoryPills,
@@ -74,12 +75,7 @@ const MenuScreen = () => {
   const payParts = formatPriceButton(total);
 
   return (
-    <motion.div
-      className="menu-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div className="menu-screen" {...pageFade}>
       <div className="menu-layout">
         <aside className="sidebar">
           <div className="sidebar-logo">
@@ -242,7 +238,13 @@ const MenuScreen = () => {
               <span className="menu-dock-cart-icon" aria-hidden>
                 <DockCartIcon />
                 {itemCount > 0 && (
-                  <span className="menu-dock-cart-badge">{itemCount}</span>
+                  <motion.span
+                    key={itemCount}
+                    className="menu-dock-cart-badge"
+                    {...badgePop}
+                  >
+                    {itemCount}
+                  </motion.span>
                 )}
               </span>
               <span className="menu-dock-cart-copy">

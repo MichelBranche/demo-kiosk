@@ -16,6 +16,7 @@ export function KioskProvider({ children }) {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoMessage, setPromoMessage] = useState(null);
   const [lastOrderNumber, setLastOrderNumber] = useState(null);
+  const [lastOrderSnapshot, setLastOrderSnapshot] = useState(null);
 
   const itemCount = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -80,17 +81,25 @@ export function KioskProvider({ children }) {
     setAppliedPromo(null);
     setPromoMessage(null);
     setLastOrderNumber(null);
+    setLastOrderSnapshot(null);
   }, []);
 
   const completeOrder = useCallback(() => {
-    const number = String(Math.floor(100 + Math.random() * 900));
+    const number = String(Math.floor(1000 + Math.random() * 9000));
+    const snapshot = {
+      number,
+      items: cartItems.map((item) => ({ ...item })),
+      orderType,
+      total,
+    };
     setLastOrderNumber(number);
+    setLastOrderSnapshot(snapshot);
     setCartItems([]);
     setPromoCode('');
     setAppliedPromo(null);
     setPromoMessage(null);
-    return number;
-  }, []);
+    return snapshot;
+  }, [cartItems, orderType, total]);
 
   const value = useMemo(
     () => ({
@@ -107,6 +116,7 @@ export function KioskProvider({ children }) {
       appliedPromo,
       promoMessage,
       lastOrderNumber,
+      lastOrderSnapshot,
       addToCart,
       updateCartItem,
       removeFromCart,
@@ -127,6 +137,7 @@ export function KioskProvider({ children }) {
       appliedPromo,
       promoMessage,
       lastOrderNumber,
+      lastOrderSnapshot,
       addToCart,
       updateCartItem,
       removeFromCart,

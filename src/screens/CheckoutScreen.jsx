@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { pageSlide } from '../utils/motion';
 import { ChevronLeft, CircleCheck, Clock, Stamp, Loader2 } from 'lucide-react';
 import { useKiosk } from '../context/KioskContext';
 import { t } from '../i18n';
 import { formatPriceButton } from '../utils/price';
+import { formatOrderLineTitle, getOrderLineMeta } from '../utils/orderLine';
 import './CheckoutScreen.css';
 
 const PAY_DURATION_MS = 2400;
@@ -25,8 +27,8 @@ const CheckoutScreen = () => {
       setTimeout(() => setPaymentStep(3), 1500),
     ];
     const done = setTimeout(() => {
-      const orderNumber = completeOrder();
-      navigate('/order-complete', { state: { orderNumber }, replace: true });
+      const snapshot = completeOrder();
+      navigate('/order-complete', { state: { snapshot }, replace: true });
     }, PAY_DURATION_MS);
     return () => {
       timers.forEach(clearTimeout);
@@ -56,12 +58,7 @@ const CheckoutScreen = () => {
     : t(language, 'paymentStatusPending');
 
   return (
-    <motion.div
-      className="checkout-screen"
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-    >
+    <motion.div className="checkout-screen" {...pageSlide}>
       <div className="checkout-header">
         <button
           type="button"
@@ -130,10 +127,13 @@ const CheckoutScreen = () => {
                   </div>
                   <p>
                     <span className="checkout-order-name">
-                      {item.quantity}× {item.name}
-                      {item.mealUpgrade && (
-                        <span className="checkout-order-meta"> + {item.mealUpgrade.name}</span>
-                      )}
+                      {formatOrderLineTitle(item)}
+                      {getOrderLineMeta(item, t, language).map((line, index) => (
+                        <span key={`${item.lineId}-meta-${index}`} className="checkout-order-meta">
+                          {' '}
+                          {line}
+                        </span>
+                      ))}
                     </span>
                     <span
                       className={`checkout-pay-tag${paying && paymentStep >= 2 ? ' is-paid' : ''}`}

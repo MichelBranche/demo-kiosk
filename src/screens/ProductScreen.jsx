@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { pageSlide, qtyPop } from '../utils/motion';
 import {
   products,
   crossSellItems,
   crossSellSortMode,
-  mealUpgradeOptions,
   defaultMealDrinkImage,
   defaultMealFriesImage,
+  getMealSizeAddon,
 } from '../data';
-import { initExtrasForProduct, extraDisplayName } from '../utils/productExtras';
+import MealComposeWizard from '../components/MealComposeWizard';
+import {
+  initExtrasForProduct,
+  extraDisplayName,
+  resolveUnitExtras,
+} from '../utils/productExtras';
 import { useHorizontalDragScroll } from '../hooks/useHorizontalDragScroll';
 import { useCrossSellAutoScroll } from '../hooks/useCrossSellAutoScroll';
 import { buildCrossSellLoop, CROSS_SELL_SORT_MODES } from '../utils/crossSell';
 import { useKiosk } from '../context/KioskContext';
 import { t } from '../i18n';
-import { calcLineTotal } from '../utils/price';
+import { calcLineTotal, formatPriceButton } from '../utils/price';
+import { calcMealFriesSurcharge } from '../utils/mealFries';
+import { getPersonalisableUnits, extrasMatchDefaults } from '../utils/personalise';
 import Price from '../components/Price';
 import ExtraIcon from '../components/ExtraIcon';
 import { ChevronLeft, Plus, Minus, Check, X } from 'lucide-react';
@@ -35,16 +43,6 @@ function resolveCrossSellProduct(item) {
   };
 }
 
-function productHasPersonalisation(p) {
-  return (
-    p.type === 'burger' ||
-    p.type === 'meal' ||
-    p.type === 'salad' ||
-    p.type === 'happyMeal' ||
-    (p.type === 'side' && p.extrasKey)
-  );
-}
-
 function extrasFromPending(product, pendingExtras) {
   const base = initExtrasForProduct(product);
   if (!pendingExtras?.length) return base;
@@ -54,20 +52,26 @@ function extrasFromPending(product, pendingExtras) {
   });
 }
 
-function buildCartLine(product, { quantity, extras, mealUpgrade, language, crossSellKey }) {
+function buildCartLine(product, { quantity, extras, mealUpgrade, menuCombo, language, crossSellKey }) {
+  const includesCombo = product.type === 'meal' || Boolean(mealUpgrade) || Boolean(menuCombo);
   return {
     productId: product.id,
     name: product.name,
     image: product.image,
     unitPrice: product.price,
     quantity,
-    extras: extras.map((ex) => ({
-      id: ex.id,
-      name: extraDisplayName(ex, language, t),
-      price: ex.price,
-      count: ex.count,
-    })),
+    productType: product.type,
+    includesCombo,
+    extras: extras
+      .filter((ex) => ex.count > 0)
+      .map((ex) => ({
+        id: ex.id,
+        name: extraDisplayName(ex, language, t),
+        price: ex.price,
+        count: ex.count,
+      })),
     mealUpgrade,
+    menuCombo: menuCombo ?? null,
     crossSellKey: crossSellKey ?? null,
   };
 }
@@ -81,14 +85,22 @@ const ProductScreen = () => {
   const [extras, setExtras] = useState([]);
   const [pendingCrossSells, setPendingCrossSells] = useState([]);
   const [crossSellModal, setCrossSellModal] = useState(null);
-  const [showMealModal, setShowMealModal] = useState(false);
+  const [mealCompose, setMealCompose] = useState(null);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeVariant, setComposeVariant] = useState('meal');
+  const [personalizeUnitId, setPersonalizeUnitId] = useState(null);
+  const [draftExtras, setDraftExtras] = useState([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const crossSellRef = useRef(null);
+  const crossSellSectionRef = useRef(null);
   const [crossSellMounted, setCrossSellMounted] = useState(false);
   const setCrossSellRef = useCallback((node) => {
     crossSellRef.current = node;
     setCrossSellMounted(!!node);
   }, []);
+
+  const showCrossSellSection =
+    !composeOpen && (!product || product.type !== 'meal' || Boolean(mealCompose));
 
   const crossSellLoop = useMemo(
     () =>
@@ -101,7 +113,7 @@ const ProductScreen = () => {
   useHorizontalDragScroll(crossSellRef, { pauseOnHover: false }, crossSellMounted && Boolean(product));
   useCrossSellAutoScroll(crossSellRef, {
     speed: 0.18,
-    enabled: crossSellMounted && Boolean(product) && !crossSellModal,
+    enabled: crossSellMounted && Boolean(product) && !crossSellModal && !personalizeUnitId,
     itemCount: crossSellLoop.length,
   });
 
@@ -113,14 +125,96 @@ const ProductScreen = () => {
       setQuantity(1);
       setPendingCrossSells([]);
       setCrossSellModal(null);
+      setMealCompose(null);
+      setPersonalizeUnitId(null);
+      setDraftExtras([]);
+      if (found.type === 'meal') {
+        setComposeVariant('meal');
+        setComposeOpen(true);
+      } else {
+        setComposeOpen(false);
+      }
     }
   }, [id]);
 
+  useEffect(() => {
+    if (!product) return;
+    const needsSandwichExtras =
+      product.type === 'meal' ? Boolean(mealCompose) : getPersonalisableUnits(product, [], products).length > 0;
+    if (!needsSandwichExtras || extras.length > 0) return;
+    const initial = initExtrasForProduct(product);
+    if (initial.length) setExtras(initial);
+  }, [product, mealCompose, extras.length]);
+
+  const personalisableUnits = useMemo(
+    () => (product ? getPersonalisableUnits(product, pendingCrossSells, products) : []),
+    [product, pendingCrossSells, mealCompose]
+  );
+
   if (!product) return null;
 
-  const handleExtraChange = (extraId, change) => {
-    setExtras(
-      extras.map((ex) => {
+  const activePersonalizeUnit = personalisableUnits.find((u) => u.id === personalizeUnitId);
+
+  const isUnitModified = (unit) => {
+    const profileProduct = unit.id === 'main' ? product : unit.product;
+    const line = pendingCrossSells.find((l) => l.crossSellKey === unit.id);
+    const current = resolveUnitExtras(unit.id, {
+      product,
+      unit,
+      extras,
+      pendingLine: line,
+    });
+    return !extrasMatchDefaults(current, profileProduct, products);
+  };
+
+  const openPersonalize = (unitId) => {
+    const unit = personalisableUnits.find((u) => u.id === unitId);
+    if (!unit) return;
+    const line = pendingCrossSells.find((l) => l.crossSellKey === unitId);
+    const resolved = resolveUnitExtras(unitId, {
+      product,
+      unit,
+      extras,
+      pendingLine: line,
+    });
+    setDraftExtras(resolved);
+    if (unitId === 'main' && extras.length === 0 && resolved.length) {
+      setExtras(resolved.map((ex) => ({ ...ex })));
+    }
+    setPersonalizeUnitId(unitId);
+  };
+
+  const closePersonalize = () => {
+    setPersonalizeUnitId(null);
+    setDraftExtras([]);
+  };
+
+  const savePersonalization = () => {
+    if (!personalizeUnitId) return;
+    if (personalizeUnitId === 'main') {
+      setExtras(draftExtras.map((ex) => ({ ...ex })));
+    } else {
+      const line = pendingCrossSells.find((l) => l.crossSellKey === personalizeUnitId);
+      const linked = products.find((p) => p.id === line?.productId);
+      if (line && linked) {
+        const updated = buildCartLine(linked, {
+          quantity: line.quantity,
+          extras: draftExtras,
+          mealUpgrade: line.mealUpgrade ?? null,
+          language,
+          crossSellKey: line.crossSellKey,
+        });
+        setPendingCrossSells((prev) =>
+          prev.map((p) => (p.crossSellKey === personalizeUnitId ? updated : p))
+        );
+      }
+    }
+    closePersonalize();
+  };
+
+  const handleDraftExtraChange = (extraId, change) => {
+    setDraftExtras((prev) =>
+      prev.map((ex) => {
         if (ex.id === extraId) {
           const newCount = ex.count + change;
           if (newCount >= 0 && newCount <= ex.maxCount) {
@@ -132,8 +226,37 @@ const ProductScreen = () => {
     );
   };
 
-  const buildMainCartItem = (mealUpgrade = null) =>
-    buildCartLine(product, { quantity, extras, mealUpgrade, language });
+  const getMealUpgradeFromCompose = () => {
+    if (!mealCompose?.sizeOption) return null;
+    return {
+      name: mealCompose.sizeOption.name,
+      price: getMealSizeAddon(product, mealCompose.sizeOption),
+    };
+  };
+
+  const buildMainCartItem = (mealUpgrade = null) => {
+    const upgrade = mealUpgrade ?? getMealUpgradeFromCompose();
+    const friesSurcharge =
+      mealCompose?.fries && mealCompose?.sizeOption
+        ? calcMealFriesSurcharge(mealCompose.sizeOption, mealCompose.fries)
+        : 0;
+    const combo =
+      mealCompose?.drink != null
+        ? {
+            sizeId: mealCompose.sizeOption?.id,
+            drink: mealCompose.drink,
+            fries: mealCompose.fries,
+            friesSurcharge,
+          }
+        : null;
+    return buildCartLine(product, {
+      quantity,
+      extras,
+      mealUpgrade: upgrade,
+      menuCombo: combo,
+      language,
+    });
+  };
 
   const commitAddToCart = (mealUpgrade = null) => {
     addToCart(buildMainCartItem(mealUpgrade));
@@ -143,7 +266,7 @@ const ProductScreen = () => {
     });
     setPendingCrossSells([]);
     setCrossSellModal(null);
-    setShowMealModal(false);
+    setComposeOpen(false);
     setShowSuccessModal(true);
     setTimeout(() => {
       setShowSuccessModal(false);
@@ -151,20 +274,53 @@ const ProductScreen = () => {
     }, 2000);
   };
 
-  const handleAddToCart = () => {
-    if (product.type === 'burger' || product.type === 'meal' || product.type === 'wrap') {
-      setShowMealModal(true);
-    } else {
-      commitAddToCart(null);
-    }
+  const handleComposeComplete = (selection) => {
+    setMealCompose(selection);
+    setComposeOpen(false);
+    setExtras(initExtrasForProduct(product));
+
+    const extraLines = (selection.selectedExtras ?? [])
+      .map((item) => {
+        const catalogProduct = products.find((p) => p.id === item.productId);
+        if (!catalogProduct) return null;
+        return buildCartLine(catalogProduct, {
+          quantity: 1,
+          extras: initExtrasForProduct(catalogProduct),
+          mealUpgrade: null,
+          language,
+          crossSellKey: `compose-extra-${catalogProduct.id}`,
+        });
+      })
+      .filter(Boolean);
+
+    setPendingCrossSells(extraLines);
   };
 
-  const handleSelectMealOption = (option) => {
-    commitAddToCart({
-      name: option.name,
-      price: option.price,
-    });
+  const handleComposeSolo = () => {
+    setMealCompose(null);
+    setComposeOpen(false);
+    commitAddToCart(null);
   };
+
+  const handleComposeCancel = () => {
+    setMealCompose(null);
+    setPendingCrossSells([]);
+    setComposeOpen(false);
+    navigate('/menu');
+  };
+
+  const handleAddToCart = () => {
+    if (product.type === 'meal' || product.type === 'burger' || product.type === 'wrap') {
+      if (!mealCompose) {
+        setComposeVariant(product.type === 'meal' ? 'meal' : 'burger');
+        setComposeOpen(true);
+        return;
+      }
+    }
+    commitAddToCart(null);
+  };
+
+  const showProductBody = product.type !== 'meal' || Boolean(mealCompose);
 
   const getCrossSellKey = (item) => item.loopKey ?? String(item.id);
 
@@ -185,22 +341,6 @@ const ProductScreen = () => {
   };
 
   const closeCrossSellModal = () => setCrossSellModal(null);
-
-  const handleCrossSellExtraChange = (extraId, change) => {
-    if (!crossSellModal) return;
-    setCrossSellModal({
-      ...crossSellModal,
-      extras: crossSellModal.extras.map((ex) => {
-        if (ex.id === extraId) {
-          const newCount = ex.count + change;
-          if (newCount >= 0 && newCount <= ex.maxCount) {
-            return { ...ex, count: newCount };
-          }
-        }
-        return ex;
-      }),
-    });
-  };
 
   const confirmCrossSellModal = () => {
     if (!crossSellModal) return;
@@ -235,11 +375,34 @@ const ProductScreen = () => {
     unitPrice: product.price,
     quantity,
     extras,
+    mealUpgrade: getMealUpgradeFromCompose(),
+    menuCombo: mealCompose?.fries
+      ? {
+          friesSurcharge: calcMealFriesSurcharge(
+            mealCompose.sizeOption,
+            mealCompose.fries
+          ),
+        }
+      : null,
   });
 
   const pendingTotal = pendingCrossSells.reduce((sum, line) => sum + calcLineTotal(line), 0);
 
   const linePreview = mainLinePreview + pendingTotal;
+  const cartPriceParts = formatPriceButton(linePreview);
+  const isPersonalizeOpen = Boolean(personalizeUnitId);
+
+  const editorExtras =
+    isPersonalizeOpen && activePersonalizeUnit
+      ? draftExtras.length > 0
+        ? draftExtras
+        : resolveUnitExtras(personalizeUnitId, {
+            product,
+            unit: activePersonalizeUnit,
+            extras,
+            pendingLine: pendingCrossSells.find((l) => l.crossSellKey === personalizeUnitId),
+          })
+      : [];
 
   const crossSellModalPreview = crossSellModal
     ? calcLineTotal({
@@ -249,18 +412,14 @@ const ProductScreen = () => {
         mealUpgrade: crossSellModal.mealUpgrade,
       })
     : 0;
+  const crossSellPriceParts = formatPriceButton(crossSellModalPreview);
 
   const isEditingPendingCrossSell =
     crossSellModal &&
     pendingCrossSells.some((line) => line.crossSellKey === crossSellModal.crossSellKey);
 
   return (
-    <motion.div
-      className="product-screen"
-      initial={{ opacity: 0, x: 50 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -50 }}
-    >
+    <motion.div className="product-screen" {...pageSlide}>
       <div className="product-header">
         <div className="product-header-img-wrapper">
           <img src={product.image} alt={product.name} className="product-header-img" />
@@ -272,54 +431,48 @@ const ProductScreen = () => {
         {product.description && <p className="product-desc">{product.description}</p>}
       </div>
 
+      {mealCompose && (
+        <div className="meal-compose-summary" role="status">
+          <span className="meal-compose-summary-size">{mealCompose.sizeOption?.name}</span>
+          <span className="meal-compose-summary-fries">{mealCompose.fries?.name}</span>
+          <span className="meal-compose-summary-drink">{mealCompose.drink?.name}</span>
+          {mealCompose.selectedExtras?.length > 0 && (
+            <span className="meal-compose-summary-extras">
+              +{mealCompose.selectedExtras.length} {t(language, 'mealComposeExtrasCount')}
+            </span>
+          )}
+        </div>
+      )}
+
+      {showProductBody && !isPersonalizeOpen && (
       <div className="product-scroll-content no-scrollbar">
-        {productHasPersonalisation(product) && (
+        {personalisableUnits.length > 0 && (
           <div className="section">
             <h3 className="section-title">{t(language, 'personalise')}</h3>
-            <div className="extras-list">
-              {extras.map((extra) => (
-                <div key={extra.id} className="extra-item">
-                  <div className="extra-left">
-                    <ExtraIcon
-                      image={extra.image}
-                      alt={extraDisplayName(extra, language, t)}
-                    />
-                    <span className="extra-name">{extraDisplayName(extra, language, t)}</span>
+            <div className="personalise-units no-scrollbar">
+              {personalisableUnits.map((unit) => (
+                <button
+                  type="button"
+                  key={unit.id}
+                  className="personalise-unit-card"
+                  onClick={() => openPersonalize(unit.id)}
+                >
+                  <div className="personalise-unit-img-wrap">
+                    <img src={unit.image} alt="" className="personalise-unit-img" />
                   </div>
-                  <div className="extra-right">
-                    <div className="counter">
-                      <button
-                        type="button"
-                        className="counter-btn"
-                        onClick={() => handleExtraChange(extra.id, -1)}
-                        disabled={extra.count === 0}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="count-val">{extra.count}</span>
-                      <button
-                        type="button"
-                        className="counter-btn"
-                        onClick={() => handleExtraChange(extra.id, 1)}
-                        disabled={extra.count === extra.maxCount}
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                    {extra.price > 0 && (
-                      <span className="extra-price">+{extra.price.toFixed(2)} €</span>
-                    )}
-                  </div>
-                </div>
+                  <span className="personalise-unit-name">{unit.name}</span>
+                  <span className="personalise-unit-hint">{t(language, 'personaliseTapHint')}</span>
+                  {isUnitModified(unit) && (
+                    <span className="personalise-unit-badge">{t(language, 'personaliseModified')}</span>
+                  )}
+                </button>
               ))}
             </div>
-            <button type="button" className="show-more-btn">
-              {t(language, 'showMore')}
-            </button>
           </div>
         )}
 
-        <div className="section cross-sell-section">
+        {showCrossSellSection && (
+        <div className="section cross-sell-section" ref={crossSellSectionRef}>
           <h3 className="section-title">{t(language, 'somethingExtra')}</h3>
           <div className="cross-sell-carousel no-scrollbar" ref={setCrossSellRef} data-lenis-prevent>
             {crossSellLoop.map((item) => {
@@ -352,10 +505,78 @@ const ProductScreen = () => {
             })}
           </div>
         </div>
+        )}
 
-        <div style={{ height: '100px' }} />
+        <div className="product-scroll-spacer" aria-hidden />
       </div>
+      )}
 
+      {showProductBody && isPersonalizeOpen && activePersonalizeUnit && (
+      <div className="product-scroll-content no-scrollbar product-personalize-editor">
+        <button
+          type="button"
+          className="personalise-editor-back"
+          onClick={closePersonalize}
+        >
+          <ChevronLeft size={18} strokeWidth={2.5} aria-hidden />
+          {t(language, 'mealComposeBack')}
+        </button>
+
+        <div className="personalise-editor-header">
+          <img
+            src={activePersonalizeUnit.image}
+            alt=""
+            className="personalise-editor-img"
+          />
+          <h3 className="personalise-editor-title">{activePersonalizeUnit.name}</h3>
+        </div>
+
+        <div className="section personalise-editor-section">
+          <h3 className="section-title">{t(language, 'personaliseIngredients')}</h3>
+          <div className="extras-list">
+            {editorExtras.map((extra) => (
+              <div key={extra.id} className="extra-item">
+                <div className="extra-left">
+                  <ExtraIcon
+                    image={extra.image}
+                    alt={extraDisplayName(extra, language, t)}
+                  />
+                  <span className="extra-name">{extraDisplayName(extra, language, t)}</span>
+                </div>
+                <div className="extra-right">
+                  <div className="counter">
+                    <button
+                      type="button"
+                      className="counter-btn"
+                      onClick={() => handleDraftExtraChange(extra.id, -1)}
+                      disabled={extra.count === 0}
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="count-val">{extra.count}</span>
+                    <button
+                      type="button"
+                      className="counter-btn"
+                      onClick={() => handleDraftExtraChange(extra.id, 1)}
+                      disabled={extra.count === extra.maxCount}
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                  {extra.price > 0 && (
+                    <span className="extra-price">+{extra.price.toFixed(2)} €</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="product-scroll-spacer" aria-hidden />
+      </div>
+      )}
+
+      {showProductBody && !isPersonalizeOpen && (
       <div className="bottom-bar product-bottom-bar">
         <button type="button" className="product-back-btn" onClick={() => navigate('/menu')}>
           <span className="product-back-btn-icon" aria-hidden>
@@ -364,29 +585,59 @@ const ProductScreen = () => {
           <span className="product-back-btn-label">{t(language, 'menu')}</span>
         </button>
 
-        <div className="main-actions">
-          <div className="qty-selector">
+        <div className="product-bottom-cta">
+          <div className="qty-selector product-qty">
             <button
               type="button"
               className="qty-btn"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              aria-label={t(language, 'crossSellQty')}
             >
               <Minus size={20} />
             </button>
-            <span className="qty-val">{quantity}</span>
-            <button type="button" className="qty-btn" onClick={() => setQuantity(quantity + 1)}>
+            <motion.span key={quantity} className="qty-val" {...qtyPop}>
+              {quantity}
+            </motion.span>
+            <button
+              type="button"
+              className="qty-btn"
+              onClick={() => setQuantity(quantity + 1)}
+              aria-label={t(language, 'crossSellQty')}
+            >
               <Plus size={20} />
             </button>
           </div>
           <button type="button" className="btn-primary add-cart-btn" onClick={handleAddToCart}>
-            {t(language, 'addToCart')} {Math.floor(linePreview)}
-            <span className="small-price">
-              .{String(Math.round((linePreview % 1) * 100)).padStart(2, '0')}
-            </span>{' '}
-            €
+            <span className="add-cart-btn-text">
+              {t(language, 'addToCart')}{' '}
+              <span className="add-cart-btn-price" aria-label={`${linePreview.toFixed(2)} €`}>
+                {cartPriceParts.whole}
+                <span className="add-cart-btn-dec">.{cartPriceParts.cents}</span>
+                <span className="add-cart-btn-cur"> €</span>
+              </span>
+            </span>
           </button>
         </div>
       </div>
+      )}
+
+      {showProductBody && isPersonalizeOpen && (
+      <div className="bottom-bar product-bottom-bar product-bottom-bar--save">
+        <button type="button" className="btn-primary full-width personalise-save-btn" onClick={savePersonalization}>
+          {t(language, 'personaliseSave')}
+        </button>
+      </div>
+      )}
+
+      <MealComposeWizard
+        open={composeOpen}
+        product={product}
+        variant={composeVariant}
+        language={language}
+        onComplete={handleComposeComplete}
+        onSolo={handleComposeSolo}
+        onCancel={handleComposeCancel}
+      />
 
       <AnimatePresence>
         {crossSellModal && (
@@ -424,51 +675,6 @@ const ProductScreen = () => {
                   <Price value={crossSellModal.product.price} />
                 </div>
               </div>
-
-              {productHasPersonalisation(crossSellModal.product) && (
-                <div className="cross-sell-modal-section">
-                  <h3 className="section-title">{t(language, 'personalise')}</h3>
-                  <div className="extras-list">
-                    {crossSellModal.extras.map((extra) => (
-                      <div key={extra.id} className="extra-item">
-                        <div className="extra-left">
-                          <ExtraIcon
-                            image={extra.image}
-                            alt={extraDisplayName(extra, language, t)}
-                          />
-                          <span className="extra-name">
-                            {extraDisplayName(extra, language, t)}
-                          </span>
-                        </div>
-                        <div className="extra-right">
-                          <div className="counter">
-                            <button
-                              type="button"
-                              className="counter-btn"
-                              onClick={() => handleCrossSellExtraChange(extra.id, -1)}
-                              disabled={extra.count === 0}
-                            >
-                              <Minus size={14} />
-                            </button>
-                            <span className="count-val">{extra.count}</span>
-                            <button
-                              type="button"
-                              className="counter-btn"
-                              onClick={() => handleCrossSellExtraChange(extra.id, 1)}
-                              disabled={extra.count === extra.maxCount}
-                            >
-                              <Plus size={14} />
-                            </button>
-                          </div>
-                          {extra.price > 0 && (
-                            <span className="extra-price">+{extra.price.toFixed(2)} €</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               <div className="cross-sell-modal-qty">
                 <span className="cross-sell-modal-qty-label">{t(language, 'crossSellQty')}</span>
@@ -516,11 +722,12 @@ const ProductScreen = () => {
                   className="btn-primary full-width cross-sell-confirm-btn"
                   onClick={confirmCrossSellModal}
                 >
-                  {t(language, 'crossSellConfirm')} {Math.floor(crossSellModalPreview)}
-                  <span className="small-price">
-                    .{String(Math.round((crossSellModalPreview % 1) * 100)).padStart(2, '0')}
-                  </span>{' '}
-                  €
+                  {t(language, 'crossSellConfirm')}{' '}
+                  <span className="add-cart-btn-price">
+                    <span className="add-cart-btn-whole">{crossSellPriceParts.whole}</span>
+                    <span className="add-cart-btn-dec">.{crossSellPriceParts.cents}</span>
+                    <span className="add-cart-btn-cur"> €</span>
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -530,66 +737,6 @@ const ProductScreen = () => {
                   {t(language, 'crossSellCancel')}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {showMealModal && (
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="modal-content meal-modal"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            >
-              <h2 className="modal-title">{t(language, 'mealModalTitle')}</h2>
-
-              <div className="meal-options">
-                {mealUpgradeOptions.map((option) => (
-                  <button
-                    type="button"
-                    key={option.id}
-                    className="meal-card"
-                    onClick={() => handleSelectMealOption(option)}
-                  >
-                    {option.isBestseller && <div className="badge-bestseller">bestseller</div>}
-                    <div className="meal-img-container">
-                      <div className="calories-badge">{option.calories}</div>
-                      <img src={product.image} alt={option.name} className="meal-base" />
-                      {option.showCombo && (
-                        <>
-                          <img
-                            src={defaultMealFriesImage}
-                            alt=""
-                            className="meal-extra fries-extra"
-                          />
-                          <img
-                            src={defaultMealDrinkImage}
-                            alt=""
-                            className="meal-extra soda-extra"
-                          />
-                        </>
-                      )}
-                    </div>
-                    <div className="meal-info">
-                      <span className="meal-name">{option.name}</span>
-                      <div className="product-price">
-                        <span className="price-value">+{option.price}</span>
-                        <span className="price-currency">€</span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <button type="button" className="btn-secondary full-width" onClick={() => commitAddToCart()}>
-                {t(language, 'notToday')}
-              </button>
             </motion.div>
           </motion.div>
         )}

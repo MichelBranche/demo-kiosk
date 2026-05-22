@@ -60,10 +60,12 @@
 }
 
 .checkout-title {
-  font-size: 32px;
+  font-size: 33px;
   font-weight: 900;
   color: var(--primary-color);
   margin-top: 12px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .checkout-body {
@@ -430,6 +432,7 @@
   background-color: var(--primary-color);
   color: var(--white);
   width: 100%;
+  min-height: var(--touch-min);
   padding: 0.85em 1em;
   border: 2px solid #1b1b1b;
   border-radius: 0.75em;
@@ -440,7 +443,10 @@
   justify-content: center;
   gap: 10px;
   font-family: inherit;
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  transition:
+    opacity var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile),
+    box-shadow var(--duration-normal) var(--ease-tactile);
 }
 
 .checkout-pay-now-btn:hover:not(:disabled) {

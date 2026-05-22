@@ -60,7 +60,7 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  min-height: 76px;
+  min-height: 80px;
   padding: 10px 6px;
   border: none;
   border-radius: 14px;
@@ -68,7 +68,13 @@
   box-shadow: none;
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
+}
+
+.category-item:active {
+  transform: scale(0.97);
 }
 
 .category-item.active {
@@ -112,7 +118,7 @@
   display: block;
   width: 100%;
   max-width: 100%;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--primary-color);
   line-height: 1.25;
@@ -129,8 +135,8 @@
 
 .sidebar-scroll-btn {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: var(--touch-min);
+  height: var(--touch-min);
   margin: 12px auto 0;
   border: none;
   border-radius: 50%;
@@ -140,7 +146,14 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--duration-fast) var(--ease-tactile),
+    box-shadow var(--duration-normal) var(--ease-tactile);
+}
+
+.sidebar-scroll-btn:active {
+  transform: scale(0.94);
 }
 
 /* —— Pannello bianco principale —— */
@@ -165,10 +178,10 @@
 }
 
 .page-title {
-  font-size: 32px;
+  font-size: 33px;
   font-weight: 900;
   color: var(--primary-color);
-  line-height: 1;
+  line-height: 1.02;
   letter-spacing: -0.02em;
   margin: 0 0 16px;
 }
@@ -208,16 +221,23 @@
 
 .pill {
   flex-shrink: 0;
-  padding: 10px 14px;
+  padding: 11px 16px;
+  min-height: var(--touch-min);
   border: none;
   border-radius: 999px;
   background: transparent;
   color: var(--primary-color);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
+}
+
+.pill:active {
+  transform: scale(0.97);
 }
 
 .pill.active {
@@ -302,15 +322,21 @@
   border: none;
   border-radius: 18px;
   background: var(--white);
-  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   text-align: left;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition:
+    box-shadow var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
 }
 
 .mc-cafe-sub-card:hover:not(:disabled) {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+.mc-cafe-sub-card:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
 .mc-cafe-sub-card:disabled {
@@ -385,14 +411,21 @@
   flex-direction: column;
   position: relative;
   cursor: pointer;
-  box-shadow: 0 3px 16px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
   min-height: 0;
 }
 
 .product-card:hover {
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.09);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.product-card:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Piccola — 1 cella griglia */
@@ -508,7 +541,7 @@
 }
 
 .product-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--primary-color);
   line-height: 1.25;
@@ -519,7 +552,7 @@
 }
 
 .product-card--default .product-name {
-  font-size: 11px;
+  font-size: 12px;
   -webkit-line-clamp: 2;
 }
 
@@ -621,7 +654,7 @@
   flex: 0 1 auto;
   min-width: 0;
   max-width: 44%;
-  padding: 0;
+  padding: 4px 0;
   margin: 0;
   border: none;
   background: none;
@@ -629,6 +662,12 @@
   text-align: left;
   font: inherit;
   color: inherit;
+  min-height: var(--touch-min);
+  transition: opacity var(--duration-normal) var(--ease-tactile);
+}
+
+.menu-dock-cart:active:not(:disabled) {
+  opacity: 0.85;
 }
 
 .menu-dock-cart:disabled {
@@ -649,13 +688,13 @@
   position: absolute;
   top: -4px;
   right: -8px;
-  min-width: 20px;
-  height: 20px;
+  min-width: 22px;
+  height: 22px;
   padding: 0 5px;
   border-radius: 50%;
   background: var(--accent-color);
   color: var(--white);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -674,7 +713,7 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--primary-color);
   line-height: 1.15;
@@ -693,14 +732,14 @@
 .menu-dock-cta {
   flex: 1 1 0;
   min-width: 0;
-  min-height: 0;
+  min-height: var(--touch-min);
   align-self: stretch;
   padding: 16px 20px;
   border: none;
   border-radius: 999px;
   background: var(--accent-color);
   color: var(--white);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
   cursor: pointer;
@@ -709,7 +748,10 @@
   justify-content: center;
   text-align: center;
   box-shadow: 0 4px 14px rgba(218, 41, 28, 0.28);
-  transition: background-color 0.15s ease, transform 0.1s ease;
+  transition:
+    background-color var(--duration-normal) var(--ease-tactile),
+    box-shadow var(--duration-normal) var(--ease-tactile),
+    transform var(--duration-fast) var(--ease-tactile);
 }
 
 .menu-dock-cta:hover:not(:disabled) {
@@ -761,18 +803,25 @@
   border: none;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
-  min-height: 44px;
+  min-height: var(--touch-min);
   box-sizing: border-box;
   background: none;
   color: var(--primary-color);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   opacity: 0.88;
   line-height: 1.2;
   text-align: left;
+  transition:
+    opacity var(--duration-normal) var(--ease-tactile),
+    background-color var(--duration-normal) var(--ease-tactile);
 }
 
 .menu-dock-back:hover {
   opacity: 1;
+}
+
+.menu-dock-back:active {
+  background-color: rgba(0, 0, 0, 0.03);
 }

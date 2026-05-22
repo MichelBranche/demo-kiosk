@@ -20,7 +20,10 @@ export function calcLineTotal(item) {
     0
   );
   const mealExtra = item.mealUpgrade?.price || 0;
-  return roundPrice((item.unitPrice + extrasTotal + mealExtra) * item.quantity);
+  const friesSurcharge = item.menuCombo?.friesSurcharge || 0;
+  return roundPrice(
+    (item.unitPrice + extrasTotal + mealExtra + friesSurcharge) * item.quantity
+  );
 }
 
 export function calcCartSubtotal(items) {

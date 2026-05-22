@@ -108,10 +108,11 @@
   width: 100%;
   margin: 0;
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--accent-color);
   animation: promoPulse 2s ease-in-out infinite;
+  padding: 4px 0;
 }
 
 @keyframes promoPulse {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { pageFade } from '../utils/motion';
 import { useKiosk } from '../context/KioskContext';
 import { languages, t } from '../i18n';
 import McLogo from '../components/McLogo';
@@ -18,12 +19,7 @@ const StartScreen = () => {
   };
 
   return (
-    <motion.div
-      className="start-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <motion.div className="start-screen" {...pageFade}>
       <div className="logo-container">
         <McLogo variant="start" />
       </div>

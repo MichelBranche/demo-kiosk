@@ -363,7 +363,7 @@ const happyMealExtraProfiles = {
 };
 
 export function getExtrasForProduct(product) {
-  if (!product) return productExtras;
+  if (!product) return [];
   if (product.type === 'salad' && product.extrasKey && saladExtraProfiles[product.extrasKey]) {
     return saladExtraProfiles[product.extrasKey];
   }
@@ -373,7 +373,79 @@ export function getExtrasForProduct(product) {
   if (product.type === 'side' && product.extrasKey && sideExtraProfiles[product.extrasKey]) {
     return sideExtraProfiles[product.extrasKey];
   }
-  return productExtras;
+  if (product.type === 'burger' || product.type === 'wrap') {
+    return productExtras;
+  }
+  return [];
+}
+
+/** Menu il cui panino nel catalogo ha nome diverso. */
+const MEAL_SANDWICH_NAME_MAP = {
+  'Crispy Chicken McWrap Menu': 'McWrap Crispy Chicken',
+  'Crispy McWrap Menu': 'McWrap Crispy',
+};
+
+/** Panino/wrap associato a un prodotto menu. */
+export function getSandwichProductForMeal(mealProduct, catalog = products) {
+  if (!mealProduct || mealProduct.type !== 'meal') return null;
+
+  if (mealProduct.sandwichProductId != null) {
+    return catalog.find((p) => p.id === mealProduct.sandwichProductId) ?? null;
+  }
+
+  const mappedName = MEAL_SANDWICH_NAME_MAP[mealProduct.name];
+  if (mappedName) {
+    return (
+      catalog.find(
+        (p) => (p.type === 'burger' || p.type === 'wrap') && p.name === mappedName
+      ) ?? null
+    );
+  }
+
+  const candidates = [
+    mealProduct.name.replace(/\s+Menu$/i, '').trim(),
+    mealProduct.name.replace(/^Menu\s+/i, '').trim(),
+  ].filter((name, index, arr) => name && arr.indexOf(name) === index);
+
+  for (const name of candidates) {
+    const exact = catalog.find(
+      (p) => (p.type === 'burger' || p.type === 'wrap') && p.name === name
+    );
+    if (exact) return exact;
+  }
+
+  const sandwiches = catalog.filter((p) => p.type === 'burger' || p.type === 'wrap');
+  const byLength = [...sandwiches].sort((a, b) => b.name.length - a.name.length);
+  for (const sandwich of byLength) {
+    if (candidates.some((candidate) => candidate.includes(sandwich.name))) {
+      return sandwich;
+    }
+  }
+
+  return null;
+}
+
+/** Catalogo item usato per personalizzazione ingredienti. */
+export function getPersonalizationProduct(product, catalog = products) {
+  if (!product) return null;
+  if (getExtrasForProduct(product).length > 0) return product;
+
+  const sandwich = getSandwichProductForMeal(product, catalog);
+  if (sandwich) return sandwich;
+
+  if (product.type === 'meal') {
+    const label =
+      product.name.replace(/\s+Menu$/i, '').replace(/^Menu\s+/i, '').trim() || product.name;
+    return {
+      id: product.id,
+      name: label,
+      image: product.image,
+      type: 'burger',
+      price: product.price,
+    };
+  }
+
+  return null;
 }
 
 export const mealUpgradeOptions = [
@@ -383,6 +455,7 @@ export const mealUpgradeOptions = [
     price: 3.5,
     calories: 880,
     isBestseller: true,
+    showCombo: true,
   },
   {
     id: 'meal-large',
@@ -392,6 +465,29 @@ export const mealUpgradeOptions = [
     showCombo: true,
   },
 ];
+
+/** Supplemento Menu Grande su prodotti già venduti come menu. */
+export const MEAL_LARGE_SURCHARGE = 1;
+
+export function getMealSizeAddon(product, sizeOption) {
+  if (!sizeOption) return 0;
+  if (product?.type === 'meal') {
+    return sizeOption.id === 'meal-large' ? MEAL_LARGE_SURCHARGE : 0;
+  }
+  return sizeOption.price ?? 0;
+}
+
+/** Bibite selezionabili nel wizard composizione menu. */
+export function getMealDrinkOptions() {
+  return products.filter((p) => p.type === 'drink' && p.category === 'drinks' && p.image);
+}
+
+/** Tipologie patatine per il menu (categoria Sfiziosità, tag fries). */
+export function getMealFriesOptions() {
+  return products.filter(
+    (p) => p.category === 'sides' && p.image && p.tags?.includes('fries')
+  );
+}
 
 export const products = [
   /* —— Burgers —— */
