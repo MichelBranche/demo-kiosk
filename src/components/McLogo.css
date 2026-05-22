@@ -1,0 +1,52 @@
+.mcd-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.mcd-logo--compact {
+  margin-bottom: 4px;
+}
+
+.mcd-logo-img {
+  display: block;
+  object-fit: contain;
+}
+
+.mcd-logo-img--box {
+  width: min(220px, 85vw);
+  height: auto;
+}
+
+.mcd-logo-img--arches-large {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+}
+
+.mcd-logo--arches-only {
+  padding: 8px 0;
+}
+
+.mcd-logo--compact .mcd-logo-img--arches {
+  width: 82px;
+  height: 82px;
+  border-radius: 0;
+}
+
+.mcd-logo--navbar {
+  line-height: 0;
+}
+
+.mcd-logo--navbar .mcd-logo-img--arches {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+}
+
+.mcd-logo--start .mcd-logo-img--arches {
+  width: min(240px, 52vw);
+  height: min(240px, 52vw);
+  border-radius: 0;
+}

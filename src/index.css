@@ -1,0 +1,197 @@
+@import './styles/fonts.css';
+
+:root {
+  /* Palette ufficiale McDonald's */
+  --mcd-gold: #ffc72c;
+  --mcd-red: #da291c;
+  --mcd-black: #000000;
+  --mcd-white: #ffffff;
+
+  --bg-color: var(--mcd-white);
+  --primary-color: var(--mcd-black);
+  --accent-color: var(--mcd-red);
+  --accent-hover: #c8102e;
+  --gold: var(--gold-active);
+  --gold-dark: #e8a317;
+  --text-dark: var(--mcd-black);
+  --text-light: var(--mcd-white);
+  --white: var(--mcd-white);
+  --cream-bg: #f5f1e9;
+  --cream-tile: #ebe4d9;
+  --panel-white: #ffffff;
+  --gold-active: #ffbc0d;
+  --pill-inactive: transparent;
+  --shell-bg: #e8e2d8;
+  --gray-light: #ebe4d9;
+  --gray-medium: #e5ddd3;
+  --radius-shell: 40px;
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+  --font-brand: 'Speedee', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-brand);
+}
+
+body {
+  background-color: var(--shell-bg);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+  max-width: 480px;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0 auto;
+  background-color: var(--cream-bg);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-shell);
+  box-shadow: 0 12px 48px rgba(80, 35, 20, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container:has(.menu-screen) {
+  overflow: hidden;
+}
+
+.app-routes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.btn-primary {
+  background-color: var(--accent-color);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: var(--gray-light);
+  color: var(--text-dark);
+  border: none;
+  border-radius: var(--border-radius-md);
+  padding: 16px 24px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--gray-medium);
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+button.category-item,
+button.lang-item,
+button.cart-summary,
+button.cross-sell-card,
+button.meal-card,
+button.pill {
+  font: inherit;
+  color: inherit;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+button.cart-summary {
+  text-align: left;
+}
+
+.bottom-bar .cart-summary {
+  width: 100%;
+}
+
+button.cart-summary:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.65);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius-lg);
+  padding: 32px 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  background: linear-gradient(to top, var(--cream-bg) 75%, transparent);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+.badge-bestseller {
+  background-color: var(--accent-color);
+  color: var(--white);
+}

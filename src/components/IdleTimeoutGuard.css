@@ -1,0 +1,56 @@
+.idle-timeout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+}
+
+.idle-timeout-dialog {
+  width: 100%;
+  max-width: 360px;
+  background: var(--panel-white);
+  border-radius: var(--border-radius-lg);
+  padding: 28px 24px 24px;
+  text-align: center;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.2);
+}
+
+.idle-timeout-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--primary-color);
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+.idle-timeout-hint {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-color);
+  opacity: 0.7;
+  margin: 0 0 24px;
+}
+
+.idle-timeout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.idle-timeout-proceed {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+}
+
+.idle-timeout-cancel {
+  width: 100%;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 800;
+}

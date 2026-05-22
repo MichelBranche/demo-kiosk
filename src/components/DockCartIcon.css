@@ -1,0 +1,14 @@
+.dock-cart-icon {
+  display: block;
+  width: 38px;
+  height: 38px;
+  background-color: var(--primary-color);
+  -webkit-mask-image: url('/brand/shopping-bag.png');
+  mask-image: url('/brand/shopping-bag.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}

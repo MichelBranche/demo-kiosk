@@ -1,0 +1,145 @@
+.promo-screen-root {
+  height: 100vh;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mcd-red);
+}
+
+.promo-navbar {
+  flex-shrink: 0;
+  height: 60px;
+  min-height: 60px;
+  background-color: var(--mcd-red);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 0 14px;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.promo-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.promo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
+.promo-dot.active {
+  width: 20px;
+  border-radius: 4px;
+  background-color: var(--mcd-gold);
+}
+
+.promo-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--mcd-red);
+  position: relative;
+}
+
+.promo-video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.promo-brand-footer {
+  flex-shrink: 0;
+  height: 40px;
+  min-height: 40px;
+  background-color: var(--mcd-red);
+  z-index: 15;
+}
+
+.promo-cta-panel {
+  flex-shrink: 0;
+  background-color: var(--cream-bg);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  padding: 32px 24px 36px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: 168px;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+}
+
+.promo-cta-panel .promo-order-here {
+  font-size: clamp(44px, 11vw, 56px);
+  font-weight: 900;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: -1px;
+  line-height: 0.95;
+  margin: 0;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-cta-panel .promo-order-here {
+    will-change: auto;
+  }
+}
+
+.promo-tap-hint {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent-color);
+  animation: promoPulse 2s ease-in-out infinite;
+}
+
+@keyframes promoPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.promo-payment-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+}
+
+.promo-payment-info {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color);
+  opacity: 0.75;
+}

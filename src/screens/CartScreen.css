@@ -1,0 +1,260 @@
+.cart-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--bg-color);
+}
+
+.cart-header {
+  padding: 24px 24px 16px;
+}
+
+.cart-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+  margin: 0;
+  border: none;
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--primary-color);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cart-back-btn:hover {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.14);
+}
+
+.cart-back-btn:active {
+  transform: scale(0.97);
+}
+
+.cart-back-btn-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--cream-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-back-btn-label {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.cart-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin-top: 12px;
+}
+
+.order-type-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: var(--gray-light);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.cart-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  padding: 0 24px;
+}
+
+.cart-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--primary-color);
+}
+
+.cart-empty p {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.cart-lines {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cart-line {
+  display: flex;
+  gap: 16px;
+  background: var(--white);
+  border-radius: var(--border-radius-md);
+  padding: 16px;
+  border: 1px solid var(--gray-light);
+}
+
+.cart-line-img {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-line-img img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.cart-line-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-line-body h3 {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.cart-line-meta {
+  font-size: 11px;
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cart-line-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.qty-selector.compact {
+  padding: 4px;
+  gap: 8px;
+}
+
+.qty-selector.compact .qty-btn {
+  width: 28px;
+  height: 28px;
+}
+
+.promo-section {
+  margin-top: 24px;
+  position: relative;
+}
+
+.promo-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.promo-row {
+  display: flex;
+  gap: 8px;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 2px solid var(--gray-medium);
+  border-radius: var(--border-radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--white);
+  color: var(--primary-color);
+}
+
+.promo-apply {
+  padding: 14px 20px;
+  white-space: nowrap;
+}
+
+.promo-msg {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.promo-msg.success {
+  color: #27ae60;
+}
+
+.promo-msg.error {
+  color: var(--accent-color);
+}
+
+.promo-clear {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--primary-color);
+  opacity: 0.5;
+}
+
+.cart-totals {
+  margin-top: 24px;
+  padding: 20px;
+  background: var(--white);
+  border-radius: var(--border-radius-md);
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.total-row.discount .discount-val {
+  color: #27ae60;
+  font-weight: 800;
+}
+
+.total-row.grand {
+  margin-bottom: 0;
+  padding-top: 12px;
+  border-top: 2px solid var(--gray-light);
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.cart-bottom-bar {
+  padding: 24px;
+}
+
+.cart-bottom-bar .pay-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
