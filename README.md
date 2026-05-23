@@ -269,6 +269,11 @@ Progetto **dimostrativo / educativo**. McDonald's®, Golden Arches® e asset cor
 
 Sviluppato come **case study frontend** su UX kiosk, design system fedele al brand e qualità d'implementazione da produzione.
 
+## License
+
+This project is proprietary and protected by copyright.
+Unauthorized use, reproduction, or distribution is prohibited.
+
 **Design:** [Michel Branche](https://www.michelbranche.it)
 
 Per domande o collaborazioni, contattami su [LinkedIn](https://www.linkedin.com/).
